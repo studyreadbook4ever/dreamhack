@@ -1,6 +1,5 @@
 ;nasm -f elf64 pibona.asm -p pibona.o
 ;ld -dynamic-linker /lib64/ld-linux-x86-64.so.2 -o pibona pibona.o -lc
-
 section .data
 	STDIN: equ 0
 	STDOUT: equ 1
@@ -21,7 +20,8 @@ section .rodata
 
 	invalid_digit_msg: db "Error: Invalid digit in input for given base.", 10, 0
 	invalid_digit_msg_len: equ $ - invalid_digit_msg - 1 
-	fmt db "%d's fibonacci = %ld + %ld", 10, 0
+	fmt_axiom db "%d's fibonacci = %d", 10, 0
+	fmt_loop db "%d's fibonacci = %ld + %ld = %ld", 10, 0
 
 section .bss
 	input_str: resb MAX_LEN
@@ -62,14 +62,14 @@ _start:
 ;logical running
 
 	xor r12, r12
-	xor r14, r14
+	xor r14, 1
 	mov r15, 1
 
 	movzx r13, byte [input_num]
 fib_zero:
-	mov rdi, fmt
+	mov rdi, fmt_axiom
 	mov rsi, r12
-	mov rdx, r14
+	mov rdx, 0
 	xor rax, rax
 	call printf
 	cmp r12, r13
@@ -77,9 +77,9 @@ fib_zero:
 	inc r12
 
 fib_one:
-	mov rdi, fmt
+	mov rdi, fmt_axiom
 	mov rsi, r12
-	mov rdx, r15
+	mov rdx, 0
 	xor rax, rax
 	call printf
 	cmp r12, r13
@@ -87,10 +87,9 @@ fib_one:
 	inc r12	
 
 fib_two:
-	mov rdi, fmt
+	mov rdi, fmt_axiom
 	mov rsi, r12
-	mov rdx, r14
-	mov rcx, r15
+	mov rdx, 1
 	xor rax, rax
 	call printf
 	cmp r12, r13
@@ -106,10 +105,11 @@ fib_loop:
 	mov r14, r15		;put[i-1] on [i-2]
 	mov r15, rbx		;put[i] on [i-1]
 	xor rax, rax		;set 0 on rax
-	mov rdi, fmt
+	mov rdi, fmt_loop
 	mov rsi, r12
 	mov rdx, r14
 	mov rcx, r15
+	mov r8, rbx
 	xor rax, rax
 	call printf
 	inc r12
